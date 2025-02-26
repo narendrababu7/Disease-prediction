@@ -3,168 +3,195 @@ import pickle
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-st.set_page_config(page_title='Prediction of Disease Outbreaks',
-                   layout='wide', page_icon="🧑‍⚕️")
+# Set page configuration
+st.set_page_config(
+    page_title="Prediction of Disease Outbreaks",
+    layout="wide",
+    page_icon="🧑‍⚕️"
+)
 
-# Check if model files exist
-model_paths = {
-    "diabetes_model": r"C:\Users\hp\Desktop\Disease outbreak1\training model\diabetes_model.sav",
-    "heart_model": r"C:\Users\hp\Desktop\Disease outbreak1\training model\heart_model.sav",
-    "parkinsons_model": r"C:\Users\hp\Desktop\Disease outbreak1\training model\parkinsons_model.sav"
-}
+# Custom CSS to set background color to white
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #ffffff;  /* White background */
+        color: #000000;            /* Black text for better contrast */
+    }
+    .stTextInput>div>div>input, .stNumberInput>div>div>input {
+        background-color: #f0f0f0; /* Light gray input fields */
+        color: #000000;            /* Black text in input fields */
+    }
+    .stButton>button {
+        background-color: #dddddd; /* Light gray buttons */
+        color: #000000;            /* Black text on buttons */
+    }
+    .stAlert {
+        background-color: #eeeeee; /* Light gray alerts */
+        color: #000000;           /* Black text in alerts */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-for model_name, path in model_paths.items():
-    if not os.path.exists(path):
-        st.error(f"File not found: {path}")
-    else:
-        st.success(f"File found: {path}")
+# Load saved models
+working_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Load models if files exist
-if all(os.path.exists(path) for path in model_paths.values()):
-    diabetes_model = pickle.load(open(model_paths["diabetes_model"], 'rb'))
-    heart_model = pickle.load(open(model_paths["heart_model"], 'rb'))
-    parkinsons_model = pickle.load(open(model_paths["parkinsons_model"], 'rb'))
-else:
-    st.error("One or more model files are missing. Please check the file paths.")
+diabetes_model = pickle.load(open(r'C:\Users\hp\Desktop\Disease outbreaks\training_modes\saved\diabetes_model.sav', 'rb'))
+heart_disease_model = pickle.load(open(r'C:\Users\hp\Desktop\Disease outbreaks\training_modes\saved\heart_disease_model.sav', 'rb'))
+parkinsons_model = pickle.load(open(r'C:\Users\hp\Desktop\Disease outbreaks\training_modes\saved\parkinsons_model.sav', 'rb'))
 
 # Sidebar for navigation
 with st.sidebar:
-    selected = option_menu('Prediction of Disease Outbreak System',
-                          ['Diabetes Prediction', 'Heart Disease Prediction', 'Parkinsons Prediction'],
-                          menu_icon='hospital-fill', icons=['activity', 'heart', 'person'], default_index=0)
+    selected = option_menu(
+        'Prediction of Disease Outbreaks System',
+        ['Diabetes Prediction', 'Heart Disease Prediction', 'Parkinsons Prediction'],
+        menu_icon='hospital-fill',
+        icons=['activity', 'heart', 'person'],
+        default_index=0
+    )
 
-# Diabetes Prediction
+# Diabetes Prediction Page
 if selected == 'Diabetes Prediction':
-    st.title('Diabetes Prediction Using ML')
+    st.title('Diabetes Prediction using ML')
+
+    # Input fields
     col1, col2, col3 = st.columns(3)
     with col1:
-        Pregnancies = st.text_input('Number of Pregnancies')
+        pregnancies = st.text_input('Number of Pregnancies')
     with col2:
-        Glucose = st.text_input('Glucose level')
+        glucose = st.text_input('Glucose Level')
     with col3:
-        Bloodpressure = st.text_input('Blood Pressure value')
+        blood_pressure = st.text_input('Blood Pressure value')
     with col1:
-        SkinThickness = st.text_input('Skin Thickness value')
+        skin_thickness = st.text_input('Skin Thickness value')
     with col2:
-        Insulin = st.text_input('Insulin level')
+        insulin = st.text_input('Insulin Level')
     with col3:
-        BMI = st.text_input('BMI value')
+        bmi = st.text_input('BMI value')
     with col1:
-        DiabetesPedigreeFunction = st.text_input('Diabetes Pedigree Function value')
+        diabetes_pedigree = st.text_input('Diabetes Pedigree Function value')
     with col2:
-        Age = st.text_input('Age of the person')
+        age = st.text_input('Age of the Person')
 
-    diab_diagnosis = ''
+    # Prediction logic
     if st.button('Diabetes Test Result'):
-        user_input = [Pregnancies, Glucose, Bloodpressure, SkinThickness, Insulin,
-                      BMI, DiabetesPedigreeFunction, Age]
-        user_input = [float(x) for x in user_input]
-        diab_prediction = diabetes_model.predict([user_input])
-        if diab_prediction[0] == 1:
-            diab_diagnosis = 'The person is diabetic'
-        else:
-            diab_diagnosis = 'The person is not diabetic'
-    st.success(diab_diagnosis)
+        try:
+            user_input = [float(pregnancies), float(glucose), float(blood_pressure),
+                          float(skin_thickness), float(insulin), float(bmi),
+                          float(diabetes_pedigree), float(age)]
+            prediction = diabetes_model.predict([user_input])
+            diagnosis = 'The person is diabetic' if prediction[0] == 1 else 'The person is not diabetic'
+            st.success(diagnosis)
+        except ValueError:
+            st.error("Please enter valid numeric values for all fields.")
 
-# Heart Disease Prediction
+# Heart Disease Prediction Page
 if selected == 'Heart Disease Prediction':
-    st.title('Heart Disease Prediction Using ML')
+    st.title('Heart Disease Prediction using ML')
+
+    # Input fields
     col1, col2, col3 = st.columns(3)
     with col1:
-        Age = st.text_input('Age of the person')
+        age = st.text_input('Age')
     with col2:
-        Sex = st.text_input('Sex of the person')
+        sex = st.text_input('Sex (1 = male; 0 = female)')
     with col3:
-        cp = st.text_input('Chest Pain Type (cp)')
+        cp = st.text_input('Chest Pain types (0-3)')
     with col1:
-        trestbps = st.text_input('Resting Blood Pressure (trestbps)')
+        trestbps = st.text_input('Resting Blood Pressure')
     with col2:
-        chol = st.text_input('Serum Cholestoral (chol)')
+        chol = st.text_input('Serum Cholestoral in mg/dl')
     with col3:
-        fbs = st.text_input('Fasting Blood Sugar > 120 mg/dl')
+        fbs = st.text_input('Fasting Blood Sugar > 120 mg/dl (1 = true; 0 = false)')
     with col1:
-        restecg = st.selectbox('Resting Electrocardiographic Results (restecg)', [0, 1, 2])
+        restecg = st.text_input('Resting Electrocardiographic results (0-2)')
     with col2:
-        thalach = st.text_input('Maximum Heart Rate Achieved (thalach)')
+        thalach = st.text_input('Maximum Heart Rate achieved')
     with col3:
-        exang = st.text_input('Exercise Induced Angina')
+        exang = st.text_input('Exercise Induced Angina (1 = yes; 0 = no)')
     with col1:
-        oldpeak = st.text_input('Depression Induced by Exercise Relative to Rest (oldpeak)')
+        oldpeak = st.text_input('ST depression induced by exercise')
     with col2:
-        slope = st.selectbox('Slope of the Peak Exercise ST Segment (slope)', [0, 1, 2])
+        slope = st.text_input('Slope of the peak exercise ST segment (0-2)')
     with col3:
-        ca = st.selectbox('Number of Major Vessels Colored by Fluoroscopy (ca)', [0, 1, 2, 3])
+        ca = st.text_input('Major vessels colored by flourosopy (0-3)')
     with col1:
         thal = st.text_input('thal: 0 = normal; 1 = fixed defect; 2 = reversable defect')
 
-    heart_diagnosis = ''
+    # Prediction logic
     if st.button('Heart Disease Test Result'):
-        user_input = [Age, Sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]
-        user_input = [float(x) for x in user_input]
-        heart_prediction = heart_model.predict([user_input])
-        if heart_prediction[0] == 1:
-            heart_diagnosis = 'The person has heart disease'
-        else:
-            heart_diagnosis = 'The person does not have heart disease'
-    st.success(heart_diagnosis)
+        try:
+            user_input = [float(age), float(sex), float(cp), float(trestbps), float(chol),
+                          float(fbs), float(restecg), float(thalach), float(exang),
+                          float(oldpeak), float(slope), float(ca), float(thal)]
+            prediction = heart_disease_model.predict([user_input])
+            diagnosis = 'The person is having heart disease' if prediction[0] == 1 else 'The person does not have any heart disease'
+            st.success(diagnosis)
+        except ValueError:
+            st.error("Please enter valid numeric values for all fields.")
 
-# Parkinson’s Prediction
-if selected == 'Parkinsons Prediction':
-    st.title('Parkinsons Disease Prediction Using ML')
-    col1, col2, col3, col4 = st.columns(4)
+# Parkinson's Prediction Page
+if selected == "Parkinsons Prediction":
+    st.title("Parkinson's Disease Prediction using ML")
+
+    # Input fields
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        MDVP_Fo = st.text_input('MDVP:Fo(Hz)')
+        fo = st.text_input('MDVP:Fo(Hz)')
     with col2:
-        MDVP_Fhi = st.text_input('MDVP:Fhi(Hz)')
+        fhi = st.text_input('MDVP:Fhi(Hz)')
     with col3:
-        MDVP_Flo = st.text_input('MDVP:Flo(Hz)')
+        flo = st.text_input('MDVP:Flo(Hz)')
     with col4:
-        MDVP_Jitter = st.text_input('MDVP:Jitter(%)')
+        jitter_percent = st.text_input('MDVP:Jitter(%)')
+    with col5:
+        jitter_abs = st.text_input('MDVP:Jitter(Abs)')
     with col1:
-        MDVP_Jitter_Abs = st.text_input('MDVP:Jitter(Abs)')
+        rap = st.text_input('MDVP:RAP')
     with col2:
-        MDVP_RAP = st.text_input('MDVP:RAP')
+        ppq = st.text_input('MDVP:PPQ')
     with col3:
-        MDVP_PPQ = st.text_input('MDVP:PPQ')
+        ddp = st.text_input('Jitter:DDP')
     with col4:
-        Jitter_DDP = st.text_input('Jitter:DDP')
+        shimmer = st.text_input('MDVP:Shimmer')
+    with col5:
+        shimmer_db = st.text_input('MDVP:Shimmer(dB)')
     with col1:
-        MDVP_Shim = st.text_input('MDVP:Shimmer')
+        apq3 = st.text_input('Shimmer:APQ3')
     with col2:
-        Shimmer_db = st.text_input('MDVP:Shimmer(db)')
+        apq5 = st.text_input('Shimmer:APQ5')
     with col3:
-        Shimmer_APQ3 = st.text_input('Shimmer:APQ3')
+        apq = st.text_input('MDVP:APQ')
     with col4:
-        Shimmer_APQ5 = st.text_input('Shimmer:APQ5')
+        dda = st.text_input('Shimmer:DDA')
+    with col5:
+        nhr = st.text_input('NHR')
     with col1:
-        MDVP_APQ = st.text_input('MDVP:APQ')
+        hnr = st.text_input('HNR')
     with col2:
-        Shimmer_DDA = st.text_input('Shimmer:DDA')
+        rpde = st.text_input('RPDE')
     with col3:
-        NHR = st.text_input('NHR')
+        dfa = st.text_input('DFA')
     with col4:
-        HNR = st.text_input('HNR')
-    with col1:
-        RPDE = st.text_input('RPDE')
-    with col2:
-        DFA = st.text_input('DFA')
-    with col3:
         spread1 = st.text_input('spread1')
-    with col4:
+    with col5:
         spread2 = st.text_input('spread2')
     with col1:
-        D2 = st.text_input('D2')
+        d2 = st.text_input('D2')
     with col2:
-        PPE = st.text_input('PPE')
+        ppe = st.text_input('PPE')
 
-    Parkinsons_diagnosis = ''
-    if st.button('Parkinsons Test Result'):
-        user_input = [MDVP_Fo, MDVP_Fhi, MDVP_Flo, MDVP_Jitter, MDVP_Jitter_Abs, MDVP_RAP, MDVP_PPQ,
-                      Jitter_DDP, MDVP_Shim, Shimmer_db, Shimmer_APQ3, Shimmer_APQ5, MDVP_APQ, Shimmer_DDA, NHR, HNR, RPDE, DFA, spread1, spread2, D2, PPE]
-        user_input = [float(x) for x in user_input]
-        Parkinsons_prediction = parkinsons_model.predict([user_input])
-        if Parkinsons_prediction[0] == 1:
-            Parkinsons_diagnosis = 'The person has Parkinsons disease'
-        else:
-            Parkinsons_diagnosis = 'The person does not have Parkinsons disease'
-    st.success(Parkinsons_diagnosis)
+    # Prediction logic
+    if st.button("Parkinson's Test Result"):
+        try:
+            user_input = [float(fo), float(fhi), float(flo), float(jitter_percent), float(jitter_abs),
+                          float(rap), float(ppq), float(ddp), float(shimmer), float(shimmer_db),
+                          float(apq3), float(apq5), float(apq), float(dda), float(nhr), float(hnr),
+                          float(rpde), float(dfa), float(spread1), float(spread2), float(d2), float(ppe)]
+            prediction = parkinsons_model.predict([user_input])
+            diagnosis = "The person has Parkinson's disease" if prediction[0] == 1 else "The person does not have Parkinson's disease"
+            st.success(diagnosis)
+        except ValueError:
+            st.error("Please enter valid numeric values for all fields.")
